@@ -4,18 +4,40 @@
         <name>ApiDevBP</name>
     </assembly>
     <members>
-        <member name="M:ApiDevBP.Controllers.UsersController.SaveUser(ApiDevBP.Models.UserModel)">
+        <member name="T:UsersController">
+            <summary>
+            Controlador para la gestión de usuarios.
+            </summary>
+        </member>
+        <member name="M:UsersController.SaveUser(ApiDevBP.Models.UserModel)">
             <summary>
             Crea un nuevo usuario.
             </summary>
-            <param name="user">Información del nuevo usuario.</param>
-            <returns>El nuevo usuario creado.</returns>
         </member>
-        <member name="M:ApiDevBP.Controllers.UsersController.GetUsers">
+        <member name="M:UsersController.UpdateUser(ApiDevBP.Models.UserModel)">
+            <summary>
+            Actualiza un usuario existente.
+            </summary>
+        </member>
+        <member name="M:UsersController.GetUsers">
             <summary>
             Obtiene la lista de usuarios.
             </summary>
-            <returns>Una lista de usuarios.</returns>
+        </member>
+        <member name="M:UsersController.GetUserById(System.Int32)">
+            <summary>
+            Obtiene un usuario por su ID.
+            </summary>
+        </member>
+        <member name="M:UsersController.DeleteUsers">
+            <summary>
+            Elimina todos los usuarios.
+            </summary>
+        </member>
+        <member name="M:UsersController.DeleteUserById(System.Int32)">
+            <summary>
+            Elimina un usuario por su ID.
+            </summary>
         </member>
     </members>
 </doc>

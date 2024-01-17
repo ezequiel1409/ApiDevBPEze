@@ -1,127 +1,155 @@
-using ApiDevBP.Entities;
 using ApiDevBP.Models;
+using ApiDevBP.Response;
 using ApiDevBP.Services;
 using Microsoft.AspNetCore.Mvc;
-using SQLite;
-using System.Reflection;
-
-namespace ApiDevBP.Controllers
+/// <summary>
+/// Controlador para la gestión de usuarios.
+/// </summary>
+[ApiController]
+[Route("[controller]")]
+public class UsersController : ControllerBase
 {
-    [ApiController]
-    [Route("[controller]")]
-    public class UsersController : ControllerBase
+    private readonly UserService _userService;
+    private readonly ILogger<UsersController> _logger;
+
+    public UsersController(ILogger<UsersController> logger, UserService userService)
     {
-        private readonly UserService _userService;
+        _logger = logger;
+        _userService = userService;
+    }
 
-        private readonly ILogger<UsersController> _logger;
-
-        public UsersController(ILogger<UsersController> logger, UserService userService)
+    /// <summary>
+    /// Crea un nuevo usuario.
+    /// </summary>
+    [HttpPost]
+    public IActionResult SaveUser([FromBody] UserModel user)
+    {
+        try
         {
-            _logger = logger;
-            _userService = userService;
-        }
-        /// <summary>
-        /// Crea un nuevo usuario.
-        /// </summary>
-        /// <param name="user">Información del nuevo usuario.</param>
-        /// <returns>El nuevo usuario creado.</returns>
-        [HttpPost]
-        public async Task<IActionResult> SaveUser(UserModel user)
-        {
-            try
+            var result = _userService.SaveUser(user);
+            var response = new Response<UserModel>
             {
-                var result = _userService.SaveUser(user);
+                Success = true,
+                Message = "Usuario guardado correctamente.",
+                Data = user
+            };
+
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al intentar guardar un usuario.");
+            return StatusCode(500, new { ErrorMessage = "Error interno al intentar guardar el usuario." });
+        }
+    }
+
+    /// <summary>
+    /// Actualiza un usuario existente.
+    /// </summary>
+    [HttpPut]
+    public IActionResult UpdateUser([FromBody] UserModel user)
+    {
+        try
+        {
+            var result = _userService.UpdateUser(user);
+           if(result)
+            {
                 return Ok(result);
             }
-            catch (Exception ex)
+            else
             {
-                // Puedes registrar la excepción para tener información sobre el error
-                _logger.LogError(ex, "Error al intentar guardar un usuario.");
-
-                // Puedes devolver un error 500 (Internal Server Error) u otra respuesta adecuada
-                return StatusCode(500, "Error interno del servidor al intentar guardar el usuario.");
+                return NotFound(new { ErrorMessage = $"Usuario con ID {user.id} no encontrado." });
             }
         }
-        [HttpPut]
-        public async Task<IActionResult> UpdateUser(UserModel user)
+        catch (Exception ex)
         {
-            try
-            {
-                var result = _userService.UpdateUser(user);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                // Puedes registrar la excepción para tener información sobre el error
-                _logger.LogError(ex, "Error al intentar modificar un usuario.");
-
-                // Puedes devolver un error 500 (Internal Server Error) u otra respuesta adecuada
-                return StatusCode(500, "Error interno del servidor al intentar guardar el usuario.");
-            }
+            _logger.LogError(ex, "Error al intentar modificar un usuario.");
+            return StatusCode(500, new { ErrorMessage = "Error interno al intentar actualizar el usuario." });
         }
-        /// <summary>
-        /// Obtiene la lista de usuarios.
-        /// </summary>
-        /// <returns>Una lista de usuarios.</returns>
+    }
 
-        [HttpGet]
-        public async Task<IActionResult> GetUsers()
+    /// <summary>
+    /// Obtiene la lista de usuarios.
+    /// </summary>
+    [HttpGet]
+    public IActionResult GetUsers()
+    {
+        try
         {
-            try
-            {
-                var users = _userService.GetUsers();
-                return Ok(users);
-            }
-            catch (Exception ex)
-            {
-                // Puedes registrar la excepción para tener información sobre el error
-                _logger.LogError(ex, "Error al intentar recuperar los usuarios.");
-
-                // Puedes devolver un error 500 (Internal Server Error) u otra respuesta adecuada
-                return StatusCode(500, "Error interno del servidor al intentar recuperar los usuarios.");
-            }
-
+            var users = _userService.GetUsers();
+            return Ok(users);
         }
-        [HttpGet("{id}")]
-        public IActionResult GetUserById(int id)
+        catch (Exception ex)
         {
-            try
-            {
-                var user = _userService.GetUserById(id);
-
-                if (user != null)
-                {
-                    return Ok(user);
-                }
-                else
-                {
-                    return NotFound($"Usuario con ID {id} no encontrado.");
-                }
-            }
-            catch (Exception ex)
-            {
-                // Manejar el error de manera adecuada
-                return StatusCode(500, "Error interno del servidor al intentar obtener el usuario por ID.");
-            }
+            _logger.LogError(ex, "Error al intentar recuperar los usuarios.");
+            return StatusCode(500, new { ErrorMessage = "Error interno al intentar recuperar los usuarios." });
         }
-        [HttpDelete]
-        public async Task<IActionResult> DeleteUsers()
+    }
+
+    /// <summary>
+    /// Obtiene un usuario por su ID.
+    /// </summary>
+    [HttpGet("{id}")]
+    public IActionResult GetUserById(int id)
+    {
+        try
         {
-            try
+            var user = _userService.GetUserById(id);
+            if (user != null)
             {
-                _userService.DeleteUsers();
-                return Ok();
+                return Ok(user);
             }
-            catch (Exception ex)
+            else
             {
-                // Puedes registrar la excepción para tener información sobre el error
-                _logger.LogError(ex, "Error al intentar borrar los usuarios.");
-
-                // Puedes devolver un error 500 (Internal Server Error) u otra respuesta adecuada
-                return StatusCode(500, "Error interno del servidor al intentar borrar los usuarios.");
+                return NotFound(new { ErrorMessage = $"Usuario con ID {id} no encontrado." });
             }
         }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error al intentar obtener el usuario por ID: {id}.");
+            return StatusCode(500, new { ErrorMessage = $"Error interno al intentar obtener el usuario por ID: {id}." });
+        }
+    }
 
+    /// <summary>
+    /// Elimina todos los usuarios.
+    /// </summary>
+    [HttpDelete]
+    public IActionResult DeleteUsers()
+    {
+        try
+        {
+            _userService.DeleteUsers();
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al intentar borrar los usuarios.");
+            return StatusCode(500, new { ErrorMessage = "Error interno al intentar borrar los usuarios." });
+        }
+    }
 
+    /// <summary>
+    /// Elimina un usuario por su ID.
+    /// </summary>
+    [HttpDelete("{id}")]
+    public IActionResult DeleteUserById(int id)
+    {
+        try
+        {
+            if (_userService.DeleteUserById(id))
+            {
+                return Ok($"Usuario con ID {id} eliminado correctamente.");
+            }
+            else
+            {
+                return NotFound(new { ErrorMessage = $"Usuario no encontrado con ID: {id}" });
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error al intentar eliminar el usuario por ID: {id}.");
+            return StatusCode(500, new { ErrorMessage = $"Error interno al intentar eliminar el usuario por ID: {id}." });
+        }
     }
 }
