@@ -1,5 +1,9 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using ApiDevBP.Services;
+using SQLite;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -8,6 +12,8 @@ Log.Logger = new LoggerConfiguration()
     .CreateBootstrapLogger();
 
 builder.Services.AddControllers();
+builder.Services.AddSingleton(_ => new SQLiteConnection("localDb"));
+builder.Services.AddSingleton<UserService>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

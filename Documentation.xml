@@ -4,5 +4,18 @@
         <name>ApiDevBP</name>
     </assembly>
     <members>
+        <member name="M:ApiDevBP.Controllers.UsersController.SaveUser(ApiDevBP.Models.UserModel)">
+            <summary>
+            Crea un nuevo usuario.
+            </summary>
+            <param name="user">Información del nuevo usuario.</param>
+            <returns>El nuevo usuario creado.</returns>
+        </member>
+        <member name="M:ApiDevBP.Controllers.UsersController.GetUsers">
+            <summary>
+            Obtiene la lista de usuarios.
+            </summary>
+            <returns>Una lista de usuarios.</returns>
+        </member>
     </members>
 </doc>
